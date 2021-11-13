@@ -258,6 +258,10 @@ Compiler.prototype.initPanerButtons = function () {
             this.getCompilerName(), this.sourceEditorId);
     }, this);
 
+    var createRustMirCfgView = _.bind(function () {
+        return Components.getRustMirCfgViewWith(this.id, this.getCompilerName(), this.sourceEditorId);
+    }, this);
+
     var createRustMacroExpView = _.bind(function () {
         return Components.getRustMacroExpViewWith(this.id, this.source, this.lastResult.rustMacroExpOutput,
             this.getCompilerName(), this.sourceEditorId);
@@ -369,6 +373,16 @@ Compiler.prototype.initPanerButtons = function () {
         var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
             this.container.layoutManager.root.contentItems[0];
         insertPoint.addChild(createRustMirView);
+    }, this));
+
+    this.container.layoutManager
+        .createDragSource(this.rustMirCfgButton, createRustMirCfgView)
+        ._dragListener.on('dragStart', togglePannerAdder);
+
+    this.rustMirCfgButton.click(_.bind(function () {
+        var insertPoint = this.hub.findParentRowOrColumn(this.container) ||
+            this.container.layoutManager.root.contentItems[0];
+        insertPoint.addChild(createRustMirCfgView);
     }, this));
 
     this.container.layoutManager
@@ -702,7 +716,7 @@ Compiler.prototype.compile = function (bypassCache, newTools) {
             produceGnatDebug: this.gnatDebugViewOpen,
             produceIr: this.irViewOpen,
             produceDevice: this.deviceViewOpen,
-            produceRustMir: this.rustMirViewOpen,
+            produceRustMir: this.rustMirViewOpen || this.rustMirCfgViewOpen,
             produceRustMacroExp: this.rustMacroExpViewOpen,
         },
         filters: this.getEffectiveFilters(),
@@ -1274,6 +1288,21 @@ Compiler.prototype.onRustMirViewClosed = function (id) {
     }
 };
 
+Compiler.prototype.onRustMirCfgViewOpened = function (id) {
+    if (this.id === id) {
+        this.rustMirCfgButton.prop('disabled', true);
+        this.rustMirCfgViewOpen = true;
+        this.compile();
+    }
+};
+
+Compiler.prototype.onRustMirCfgViewClosed = function (id) {
+    if (this.id === id) {
+        this.rustMirCfgButton.prop('disabled', false);
+        this.rustMirCfgViewOpen = false;
+    }
+};
+
 Compiler.prototype.onGnatDebugViewOpened = function (id) {
     if (this.id === id) {
         this.gnatDebugButton.prop('disabled', true);
@@ -1442,6 +1471,7 @@ Compiler.prototype.initButtons = function (state) {
     this.deviceButton = this.domRoot.find('.btn.view-device');
     this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
     this.rustMirButton = this.domRoot.find('.btn.view-rustmir');
+    this.rustMirCfgButton = this.domRoot.find('.btn.view-rustmir-cfg');
     this.rustMacroExpButton = this.domRoot.find('.btn.view-rustmacroexp');
     this.gccDumpButton = this.domRoot.find('.btn.view-gccdump');
     this.gnatDebugButton = this.domRoot.find('.btn.view-gnatdebug');
@@ -1656,6 +1686,7 @@ Compiler.prototype.updateButtons = function () {
     this.irButton.prop('disabled', this.irViewOpen);
     this.deviceButton.prop('disabled', this.deviceViewOpen);
     this.rustMirButton.prop('disabled', this.rustMirViewOpen);
+    this.rustMirCfgButton.prop('disabled', this.rustMirCfgViewOpen);
     this.rustMacroExpButton.prop('disabled', this.rustMacroExpViewOpen);
     this.cfgButton.prop('disabled', this.cfgViewOpen);
     this.gccDumpButton.prop('disabled', this.gccDumpViewOpen);
@@ -1668,6 +1699,7 @@ Compiler.prototype.updateButtons = function () {
     this.irButton.toggle(!!this.compiler.supportsIrView);
     this.deviceButton.toggle(!!this.compiler.supportsDeviceAsmView);
     this.rustMirButton.toggle(!!this.compiler.supportsRustMirView);
+    this.rustMirCfgButton.toggle(!!this.compiler.supportsRustMirView);
     this.rustMacroExpButton.toggle(!!this.compiler.supportsRustMacroExpView);
     this.cfgButton.toggle(!!this.compiler.supportsCfg);
     this.gccDumpButton.toggle(!!this.compiler.supportsGccDump);
@@ -1759,6 +1791,8 @@ Compiler.prototype.initListeners = function () {
     this.eventHub.on('deviceViewClosed', this.onDeviceViewClosed, this);
     this.eventHub.on('rustMirViewOpened', this.onRustMirViewOpened, this);
     this.eventHub.on('rustMirViewClosed', this.onRustMirViewClosed, this);
+    this.eventHub.on('rustMirCfgViewOpened', this.onRustMirCfgViewOpened, this);
+    this.eventHub.on('rustMirCfgViewClosed', this.onRustMirCfgViewClosed, this);
     this.eventHub.on('rustMacroExpViewOpened', this.onRustMacroExpViewOpened, this);
     this.eventHub.on('rustMacroExpViewClosed', this.onRustMacroExpViewClosed, this);
     this.eventHub.on('outputOpened', this.onOutputOpened, this);
@@ -2280,7 +2314,7 @@ Compiler.prototype.onMouseMove = function (e) {
                 var editorId = this.getEditorIdBySourcefile(hoverAsm.source);
                 if (editorId) {
                     this.eventHub.emit('editorLinkLine', editorId, sourceLine, sourceColBegin, sourceColEnd, false);
-    
+
                     this.eventHub.emit('panesLinkLine', this.id,
                         sourceLine, sourceColBegin, sourceColEnd,
                         false, this.getPaneName(), editorId);

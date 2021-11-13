@@ -105,6 +105,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.view-rustmir(title="Show Rust Mid-level Intermediate Representation")
             span.dropdown-icon.fas.fa-water
             | Rust MIR output
+          button.dropdown-item.btn.btn-sm.btn-light.view-rustmir-cfg(title="Show Rust Mid-level Intermediate Representation CFG")
+            span.dropdown-icon.fas.fa-exchange-alt
+            | Rust MIR CFG output
           button.dropdown-item.btn.btn-sm.btn-light.view-rustmacroexp(title="Show Rust Macro Expansion")
             span.dropdown-icon.fas.fa-arrows-alt
             | Rust Macro Expansion output
@@ -114,9 +117,9 @@
           button.dropdown-item.btn.btn-sm.btn-light.view-gnatdebug(title="Show GNAT Debug Expanded Code")
             span.dropdown-icon.fas.fa-tree
             | GNAT Debug Expanded Code
-          button.dropdown-item.btn.btn-sm.btn-light.view-cfg(title="Show Graph Output")
+          button.dropdown-item.btn.btn-sm.btn-light.view-cfg(title="Show ASM CFG Output")
             span.dropdown-icon.fas.fa-exchange-alt
-            | Graph output
+            | ASM CFG output
       .btn-group.btn-group-sm(role="group")
         button.btn.btn-sm.btn-light.dropdown-toggle.add-tool(type="button" title="Add tool" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Add tooling to this editor and compiler")
           span.fas.fa-screwdriver
@@ -300,6 +303,12 @@
     .top-bar.btn-toolbar.bg-light(role="toolbar")
       include font-size
     .monaco-placeholder
+
+  #rustmircfg
+    .top-bar.btn-toolbar.bg-light.cfg-toolbar(role="toolbar")
+      .btn-group.btn-group-sm(role="group")
+        select.function-picker
+    .graph-placeholder
 
   #rustmacroexp
     .top-bar.btn-toolbar.bg-light(role="toolbar")

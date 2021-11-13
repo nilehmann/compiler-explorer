@@ -41,6 +41,7 @@ var astView = require('./panes/ast-view');
 var irView = require('./panes/ir-view');
 var deviceView = require('./panes/device-view');
 var rustMirView = require('./panes/rustmir-view');
+var rustMirCfgView = require('./panes/rustmir-cfg-view');
 var gnatDebugView = require('./panes/gnatdebug-view');
 var rustMacroExpView = require('./panes/rustmacroexp-view');
 var gccDumpView = require('./panes/gccdump-view');
@@ -145,6 +146,10 @@ function Hub(layout, subLangId, defaultLangId) {
         function (container, state) {
             return self.rustMirViewFactory(container, state);
         });
+    layout.registerComponent(Components.getRustMirCfgView().componentName,
+        function (container, state) {
+            return self.rustMirCfgViewFactory(container, state);
+        });
     layout.registerComponent(Components.getGnatDebugView().componentName,
         function (container, state) {
             return self.gnatDebugViewFactory(container, state);
@@ -202,7 +207,7 @@ Hub.prototype.undefer = function () {
     this.deferred = false;
     var eventHub = this.layout.eventHub;
     var compilerEmissions = [];
-    var nonCompilerEmissions = []; 
+    var nonCompilerEmissions = [];
 
     _.each(this.deferredEmissions, function (args) {
         if (args[0] === 'compiler') {
@@ -329,6 +334,10 @@ Hub.prototype.gnatDebugViewFactory = function (container, state) {
 
 Hub.prototype.rustMirViewFactory = function (container, state) {
     return new rustMirView.RustMir(this, container, state);
+};
+
+Hub.prototype.rustMirCfgViewFactory = function (container, state) {
+    return new rustMirCfgView.RustMirCfg(this, container, state);
 };
 
 Hub.prototype.rustMacroExpViewFactory = function (container, state) {

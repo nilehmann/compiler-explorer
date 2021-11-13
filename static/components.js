@@ -310,6 +310,24 @@ module.exports = {
             },
         };
     },
+    getRustMirCfgView: function () {
+        return {
+            type: 'component',
+            componentName: 'rustmir-cfg',
+            componentState: {},
+        };
+    },
+    getRustMirCfgViewWith: function (id, compilerName, editorId) {
+        return {
+            type: 'component',
+            componentName: 'rustmir-cfg',
+            componentState: {
+                compilerId: id,
+                compilerName: compilerName,
+                editorId: editorId,
+            },
+        };
+    },
     getGnatDebugView: function () {
         return {
             type: 'component',
