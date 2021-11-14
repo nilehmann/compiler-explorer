@@ -22,12 +22,14 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
+import * as vis from "vis-network";
+
 export interface CfgState {
     id: number;
     editorid: number;
     selectedFn?: string;
-    pos: any; // vis.Network.Position
-    scale: number;
+    pos?: vis.Position;
+    scale?: number;
     options?: {
         physics?: boolean;
         navigation?: boolean;

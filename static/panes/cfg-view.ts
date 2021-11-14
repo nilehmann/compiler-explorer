@@ -22,7 +22,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-import vis from "vis";
+import * as vis from "vis-network";
 import _ from 'underscore';
 import { Toggles } from '../toggles';
 import { ga } from "../analytics";
@@ -30,19 +30,24 @@ import TomSelect from 'tom-select';
 import { Container } from "golden-layout";
 import { CfgState } from "./cfg-view.interfaces";
 
+interface Data {
+    nodes: vis.Node[],
+    edges: vis.Edge[],
+}
+
 export class Cfg {
     container: Container;
     eventHub: any;
     domRoot: JQuery;
-    defaultCfgOutput: object;
-    binaryModeSupport: object;
-    savedPos: any;
-    savedScale: any;
+    defaultCfgOutput: Data;
+    binaryModeSupport: Data;
+    savedPos?: vis.Position;
+    savedScale?: number;
     needsMove: boolean;
     currentFunc: string;
     functions: { [key: string]: any };
-    networkOpts: any;
-    cfgVisualiser: any;
+    networkOpts: vis.Options;
+    cfgVisualiser: vis.Network;
     compilerId: number;
     _compilerName: string = '';
     _editorid: number;
@@ -74,7 +79,7 @@ export class Cfg {
         state.options = state.options || {};
         this.savedPos = state.pos;
         this.savedScale = state.scale;
-        this.needsMove = this.savedPos && this.savedScale;
+        this.needsMove = !!this.savedPos && !!this.savedScale;
 
         this.currentFunc = state.selectedFn || '';
         this.functions = {};
@@ -118,7 +123,7 @@ export class Cfg {
             },
         };
 
-        this.cfgVisualiser = new vis.Network(this.domRoot.find('.graph-placeholder')[0],
+        this.cfgVisualiser = new vis.Network(this.domRoot.find('.graph-placeholder').get(0),
             this.defaultCfgOutput, this.networkOpts);
 
 
@@ -268,11 +273,9 @@ export class Cfg {
     }
 
     resize() {
-        if (this.cfgVisualiser.canvas) {
-            const height = this.domRoot.height() - this.topBar.outerHeight(true);
-            this.cfgVisualiser.setSize('100%', height.toString());
-            this.cfgVisualiser.redraw();
-        }
+        const height = this.domRoot.height() - this.topBar.outerHeight(true);
+        this.cfgVisualiser.setSize('100%', height.toString());
+        this.cfgVisualiser.redraw();
     }
 
     getPaneName() {
@@ -285,7 +288,7 @@ export class Cfg {
         this.container.setTitle(this.getPaneName());
     }
 
-    assignLevels(data: any) {
+    assignLevels(data: Data) {
         const nodes = [];
         const idToIdx = [];
         for (const i in data.nodes) {
@@ -358,7 +361,7 @@ export class Cfg {
         });
     }
 
-    showCfgResults(data: any) {
+    showCfgResults(data: Data) {
         this.assignLevels(data);
         this.cfgVisualiser.setData(data);
         /* FIXME: This does not work. It's here because I suspected that not having content in the constructor was
